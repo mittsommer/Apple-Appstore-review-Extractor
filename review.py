@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup, Comment
 import time
 import pandas as pd
 import splite
-
+import tfidf
 
 def seeting(url):
     # Setting up Chrome webdriver Options
@@ -23,7 +23,7 @@ def get_fullpage(driver):
         driver.execute_script("window.scrollBy(0,3000)")
         time.sleep(1)
         i = 0
-        if len(driver.find_elements_by_xpath("//div[@class='UD7Dzf']")) >= 5:
+        if len(driver.find_elements_by_xpath("//div[@class='UD7Dzf']")) >= 500:
             break
         try:
             driver.find_elements_by_css_selector('.RveJvd')[0].click()
@@ -46,8 +46,8 @@ def get_review(driver):
 
 
 def save_csv(title, review):
-    dataframe = pd.DataFrame({'review': review})
-    dataframe.to_csv(title + '.csv', index=False, sep=',', encoding='utf_8_sig')
+    dataframe = pd.DataFrame(review)
+    dataframe.to_csv(title + '.csv', index=True, sep=',', encoding='utf_8_sig')
 
 
 def main():
@@ -55,15 +55,20 @@ def main():
            'https://play.google.com/store/apps/details?id=com.demaecan.androidapp&hl=ja&showAllReviews=true',
            'https://play.google.com/store/apps/details?id=jp.co.rakuten.delivery&hl=ja&showAllReviews=true'
            ]
+    allreview = []
     for url in url:
+        str = ''
         driver = seeting(url)
         get_fullpage(driver)
         app_title, review = get_review(driver)
         review_split = splite.splite(review)
+        allreview.append(str.join(review_split))
         save_csv(app_title, review)
         save_csv(app_title + "split", review_split)
 
-
+    word, weight = tfidf.tfidf(allreview)
+    dataframe = pd.DataFrame({'word': word, 'UberEat': weight[0], '出前館': weight[1], '楽天デリバリー楽天の出前・宅配注文アプリ': weight[2]})
+    dataframe.to_csv('weight.csv', index=True, sep=',', encoding='utf_8_sig')
 
 if __name__ == "__main__":
     # execute only if run as a script
