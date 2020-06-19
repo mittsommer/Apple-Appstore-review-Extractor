@@ -3,6 +3,7 @@ from selenium import webdriver
 from bs4 import BeautifulSoup, Comment
 import time
 import pandas as pd
+import splite
 
 
 def seeting(url):
@@ -22,7 +23,7 @@ def get_fullpage(driver):
         driver.execute_script("window.scrollBy(0,3000)")
         time.sleep(1)
         i = 0
-        if len(driver.find_elements_by_xpath("//div[@class='UD7Dzf']")) >= 500:
+        if len(driver.find_elements_by_xpath("//div[@class='UD7Dzf']")) >= 5:
             break
         try:
             driver.find_elements_by_css_selector('.RveJvd')[0].click()
@@ -55,11 +56,12 @@ def main():
            'https://play.google.com/store/apps/details?id=jp.co.rakuten.delivery&hl=ja&showAllReviews=true'
            ]
     for url in url:
-
         driver = seeting(url)
         get_fullpage(driver)
         app_title, review = get_review(driver)
+        review_split = splite.splite(review)
         save_csv(app_title, review)
+        save_csv(app_title + "split", review_split)
 
 
 
